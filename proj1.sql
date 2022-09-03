@@ -43,31 +43,56 @@ AS
 -- Question 1iii
 CREATE VIEW q1iii(birthyear, avgheight, count)
 AS
-  SELECT 1, 1, 1 -- replace this line
+  SELECT birthyear, AVG(height) avgheight, COUNT(playerID)
+  FROM people 
+  GROUP BY birthyear
+  ORDER BY birthyear-- replace this line
 ;
 
 -- Question 1iv
 CREATE VIEW q1iv(birthyear, avgheight, count)
 AS
-  SELECT 1, 1, 1 -- replace this line
+  SELECT birthyear, AVG(height) avgheight, COUNT(playerID)
+  FROM people 
+  GROUP BY birthyear
+  HAVING avgheight > 70
+  ORDER BY birthyear-- replace this line
 ;
 
 -- Question 2i
 CREATE VIEW q2i(namefirst, namelast, playerid, yearid)
 AS
-  SELECT 1, 1, 1, 1 -- replace this line
+  SELECT namefirst, namelast, playerid, yearid
+  FROM people NATURAL JOIN halloffame
+  WHERE halloffame.inducted = 'Y'
+  ORDER BY yearid DESC, playerid -- replace this line
 ;
 
 -- Question 2ii
+DROP VIEW IF EXISTS CAcollege;
+CREATE VIEW CAcollege(playerid, schoolid)
+AS
+  SELECT c.playerid, c.schoolid
+  FROM collegeplaying c INNER JOIN schools s
+  ON c.schoolid = s.schoolid
+  WHERE s.schoolState = 'CA'
+;
+
 CREATE VIEW q2ii(namefirst, namelast, playerid, schoolid, yearid)
 AS
-  SELECT 1, 1, 1, 1, 1 -- replace this line
+  SELECT namefirst, namelast, q.playerid, schoolid, yearid
+  FROM q2i q INNER JOIN CAcollege c
+  ON q.playerid = c.playerid
+  ORDER BY yearid DESC, schoolid, q.playerid -- replace this line
 ;
 
 -- Question 2iii
 CREATE VIEW q2iii(playerid, namefirst, namelast, schoolid)
 AS
-  SELECT 1, 1, 1, 1 -- replace this line
+  SELECT q.playerid, namefirst, namelast, schoolid
+  FROM q2i q LEFT OUTER JOIN collegeplaying c
+  ON q.playerid = c.playerid
+  ORDER BY q.playerid DESC, schoolid -- replace this line
 ;
 
 -- Question 3i
