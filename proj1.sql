@@ -96,48 +96,135 @@ AS
 ;
 
 -- Question 3i
+DROP VIEW IF EXISTS slg;
+CREATE VIEW slg(playerid, yearid, AB, slgval)
+AS
+  SELECT playerid, yearid, AB, (H + H2B + 2*H3B + 3*HR + 0.0)/(AB + 0.0)
+  FROM batting
+;
+
 CREATE VIEW q3i(playerid, namefirst, namelast, yearid, slg)
 AS
-  SELECT 1, 1, 1, 1, 1 -- replace this line
+  SELECT p.playerID, p.namefirst, p.namelast, s.yearid, s.slgval
+  FROM people p  INNER JOIN slg s
+  ON p.playerid = s.playerid
+  WHERE s.AB > 50
+  ORDER BY s.slgval DESC, s.yearid, p.playerid
+  LIMIT 10 -- replace this line
 ;
 
 -- Question 3ii
+DROP VIEW IF EXISTS lslg;
+CREATE VIEW lslg(playerid, lslgval)
+AS
+  SELECT playerid, (SUM(H) + SUM(H2B) + 2*SUM(H3B) + 3*SUM(HR) + 0.0)/(SUM(AB) + 0.0)
+  FROM batting
+  GROUP BY playerid
+  HAVING SUM(AB) > 50
+;
 CREATE VIEW q3ii(playerid, namefirst, namelast, lslg)
 AS
-  SELECT 1, 1, 1, 1 -- replace this line
+  SELECT p.playerid, p.namefirst, p.namelast, l.lslgval
+  FROM people p INNER JOIN lslg l
+  ON p.playerid = l.playerid
+  ORDER BY l.lslgval DESC, p.playerid
+  LIMIT 10  -- replace this line
 ;
 
 -- Question 3iii
 CREATE VIEW q3iii(namefirst, namelast, lslg)
 AS
-  SELECT 1, 1, 1 -- replace this line
+  SELECT p.namefirst, p.namelast, l.lslgval
+  FROM people p INNER JOIN lslg l
+  ON p.playerid = l.playerid 
+  WHERE l.lslgval > (
+    SELECT lslgval
+    FROM lslg
+    WHERE playerid = "mayswi01"
+  ) -- replace this line
 ;
 
 -- Question 4i
 CREATE VIEW q4i(yearid, min, max, avg)
 AS
-  SELECT 1, 1, 1, 1 -- replace this line
+  SELECT yearid, MIN(salary), MAX(salary), avg(salary)
+  FROM salaries
+  GROUP BY yearid
+  ORDER BY yearid  -- replace this line
 ;
 
 -- Question 4ii
+DROP TABLE IF EXISTS binids;
+CREATE TABLE binids(binid);
+INSERT INTO binids VALUES (0), (1), (2), (3), (4), (5), (6), (7), (8), (9);
+
+DROP VIEW IF EXISTS bins_statistics;
+CREATE VIEW bins_statistics(binstart, binend, width)
+AS
+  SELECT MIN(salary), MAX(salary), CAST(((MAX(salary) - MIN(salary))/10) AS INT)
+  FROM salaries
+  where yearid = 2016
+;
+
 CREATE VIEW q4ii(binid, low, high, count)
 AS
-  SELECT 1, 1, 1, 1 -- replace this line
+  SELECT DISTINCT binid, binstart+binid*width, binstart+(binid+1)*width, COUNT(*)
+  FROM salaries, bins_statistics, binids
+  WHERE (salary between binstart+binid*width and binstart+(binid+1)*width)
+  AND yearid = 2016
+  GROUP BY binid -- replace this line
 ;
 
 -- Question 4iii
-CREATE VIEW q4iii(yearid, mindiff, maxdiff, avgdiff)
+DROP VIEW IF EXISTS salary_statistics;
+CREATE VIEW salary_statistics(yearid, minsa, maxsa, avgsa)
 AS
-  SELECT 1, 1, 1, 1 -- replace this line
+  SELECT yearid, MIN(salary), MAX(salary), AVG(salary)
+  FROM salaries
+  GROUP BY yearid
 ;
 
+CREATE VIEW q4iii(yearid, mindiff, maxdiff, avgdiff)
+AS
+  SELECT s1.yearid, s1.minsa - s2.minsa, s1.maxsa - s2.maxsa, s1.avgsa - s2.avgsa
+  FROM salary_statistics s1
+  INNER JOIN salary_statistics s2
+  ON s1.yearid - 1 = s2.yearid
+  GROUP BY s2.yearid-- replace this line
+;
+
+
 -- Question 4iv
+DROP VIEW IF EXISTS maxid;
+CREATE VIEW maxid(playerid, salary, yearid)
+AS
+  SELECT playerid, salary, yearid
+  FROM salaries
+  WHERE (yearid = 2000 AND salary = (
+    SELECT MAX(salary)
+    FROM salaries s1
+    WHERE s1.yearid = 2000)
+  )
+  OR
+  (yearid = 2001 AND salary = (
+    SELECT MAX(salary)
+    FROM salaries s1
+    WHERE s1.yearid = 2001)
+  )
+;
+
 CREATE VIEW q4iv(playerid, namefirst, namelast, salary, yearid)
 AS
-  SELECT 1, 1, 1, 1, 1 -- replace this line
+  SELECT p.playerid, p.namefirst, p.namelast, m.salary, m.yearid
+  FROM people p INNER JOIN maxid m
+  ON p.playerid = m.playerid -- replace this line
 ;
 -- Question 4v
 CREATE VIEW q4v(team, diffAvg) AS
-  SELECT 1, 1 -- replace this line
+  SELECT a.teamid, MAX(s.salary) - MIN(s.salary)
+  FROM allstarfull a INNER JOIN salaries s
+  ON a.playerid = s.playerid AND a.yearid = s.yearid
+  WHERE s.yearid = 2016
+  GROUP BY a.teamid -- replace this line
 ;
 
