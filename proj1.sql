@@ -19,19 +19,25 @@ DROP VIEW IF EXISTS q4v;
 -- Question 0
 CREATE VIEW q0(era)
 AS
-  SELECT 1 -- replace this line
+  SELECT MAX(era)
+  FROM pitching -- replace this line
 ;
 
 -- Question 1i
 CREATE VIEW q1i(namefirst, namelast, birthyear)
 AS
-  SELECT 1, 1, 1 -- replace this line
+  SELECT namefirst, namelast, birthyear
+  FROM people 
+  WHERE weight > 300 -- replace this line
 ;
 
 -- Question 1ii
 CREATE VIEW q1ii(namefirst, namelast, birthyear)
 AS
-  SELECT 1, 1, 1 -- replace this line
+  SELECT namefirst, namelast, birthyear
+  FROM people 
+  WHERE namefirst LIKE '% %'
+  ORDER BY namefirst, namelast-- replace this line
 ;
 
 -- Question 1iii
